@@ -25,7 +25,7 @@ impl<W: Write> Encoder<W> {
 }
 
 pub fn create_js_class(env: &Env) -> Result<JsFunction> {
-  env.define_class("GIFEncoder", encoder_constructor, &vec![])
+  env.define_class("GIFEncoder", encoder_constructor, &[])
 }
 
 fn map_to_js_range_error(err: TryFromIntError) -> napi::Error {

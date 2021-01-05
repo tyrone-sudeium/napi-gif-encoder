@@ -1,5 +1,5 @@
-const { sync } = require('./index')
+const { GIFEncoder } = require('./index')
 
-console.assert(sync(0) === 100, 'Simple test failed')
+console.assert(typeof GIFEncoder === 'function', 'Simple test failed')
 
 console.info('Simple test passed')
