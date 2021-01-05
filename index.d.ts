@@ -1,3 +1,5 @@
-export const sync: (input: number) => number
-// sleep [duration] ms, return Promise which resolved 2 * duration
-export const sleep: (duration: number) => Promise<number>
+export class GIFEncoder {
+    constructor(width: number, height: number, file: string)
+    addFrame(frame: Buffer): void
+    setDelay(delay: number): void
+}

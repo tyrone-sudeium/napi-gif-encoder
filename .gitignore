@@ -117,6 +117,8 @@ dist
 #Added by cargo
 
 /target
-Cargo.lock
+# We want to commit Cargo.lock since the rust code in this repo is not to be
+# published onto crates and shouldn't be used as a rust library.
+# Cargo.lock
 
 *.node

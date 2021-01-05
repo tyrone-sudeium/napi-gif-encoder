@@ -1,13 +1,13 @@
-# `@napi-rs/package-template`
+# `@napi-gif-encoder`
 
-![https://github.com/napi-rs/package-template/actions](https://github.com/napi-rs/package-template/workflows/CI/badge.svg)
+![https://github.com/tyrone-sudeium/napi-gif-encoder/actions](https://github.com/tyrone-sudeium/napi-gif-encoder/workflows/CI/badge.svg)
 
-> Template project for writing node package with napi-rs.
+> GIF Encoder for Node JS that tries to have reasonable performance.
 
 ## Install this test package
 
 ```
-yarn add @napi-rs/package-template
+yarn add napi-gif-encoder
 ```
 
 ## Support matrix
