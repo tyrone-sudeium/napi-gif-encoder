@@ -1,11 +1,11 @@
 {
-  "name": "@napi-rs/package-template-android-arm64",
+  "name": "napi-gif-encoder-android-arm64",
   "version": "1.0.0",
   "os": ["android"],
   "cpu": ["arm64"],
-  "main": "package-template.android-arm64.node",
-  "files": ["package-template.android-arm64.node"],
-  "description": "Template project for writing node package with napi-rs",
+  "main": "napi-gif-encoder.android-arm64.node",
+  "files": ["napi-gif-encoder.android-arm64.node"],
+  "description": "GIF Encoder for Node JS that tries to have reasonable performance",
   "keywords": ["napi-rs", "NAPI", "N-API", "Rust", "node-addon", "node-addon-api"],
   "license": "MIT",
   "engines": {

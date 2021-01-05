@@ -2,7 +2,7 @@ name: CI
 
 env:
   DEBUG: 'napi:*'
-  APP_NAME: 'package-template'
+  APP_NAME: 'napi-gif-encoder'
 
 on:
   push:
@@ -391,7 +391,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: ['10', '12', '14', '15']
+        node: ['12', '14']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -432,7 +432,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['10', '12', '14', '15']
+        node: ['12', '14']
     runs-on: ubuntu-latest
 
     steps:
@@ -469,7 +469,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['10', '12', '14', '15']
+        node: ['12', '14']
 
     steps:
       - run: docker run --rm --privileged multiarch/qemu-user-static:register --reset

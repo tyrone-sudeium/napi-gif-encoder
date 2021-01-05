@@ -36,7 +36,7 @@ With [ava](https://github.com/avajs/ava), run `yarn test/npm run test` to testin
 
 ### CI
 
-With github actions, every commits and pull request will be built and tested automatically in [`node@10`, `node@12`, `@node14`] x [`macOS`, `Linux`, `Windows`] matrix. You will never be afraid of the native addon broken in these platforms.
+With github actions, every commits and pull request will be built and tested automatically in [`node@12`, `@node14`] x [`macOS`, `Linux`, `Windows`] matrix. You will never be afraid of the native addon broken in these platforms.
 
 ### Release
 
