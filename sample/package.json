@@ -1,0 +1,14 @@
+{
+  "name": "napi-gif-encoder-sample",
+  "version": "0.0.1",
+  "description": "Sample for napi-gif-encoder",
+  "main": "index.js",
+  "repository": "git@github.com:tyrone-sudeium/napi-gif-encoder.git",
+  "author": "Tyrone Trevorrow <tyrone@sudeium.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "gif-encoder-2": "tyrone-sudeium/gif-encoder-2#feature/type_definitions",
+    "pngjs": "^6.0.0"
+  }
+}

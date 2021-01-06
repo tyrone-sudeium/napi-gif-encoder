@@ -1,10 +1,12 @@
-# `@napi-gif-encoder`
+# `napi-gif-encoder`
 
 ![https://github.com/tyrone-sudeium/napi-gif-encoder/actions](https://github.com/tyrone-sudeium/napi-gif-encoder/workflows/CI/badge.svg)
 
 > GIF Encoder for Node JS that tries to have reasonable performance.
 
-## Install this test package
+## Install
+
+Soon:
 
 ```
 yarn add napi-gif-encoder
@@ -20,73 +22,48 @@ yarn add napi-gif-encoder
 
 ### NodeJS
 
-| Node10 | Node 12 | Node14 | Node15 |
-| ------ | ------- | ------ | ------ |
-| ✓      | ✓       | ✓      | ✓      |
+Theoretically, any version of Node.js that supports N-API should work. The CI
+is validated against LTS versions of Node:
 
-## Ability
+| Node 12 | Node14 |
+| ------- | ------ |
+| ✓       | ✓      |
 
-### Build
+### Building
 
-After `yarn build/npm run build` command, you can see `index.[darwin|win32|linux].node` file in project root. This is the native addon built from [lib.rs](./src/lib.rs).
+If you are using this as a dependency, since we use N-API, you don't
+need to build anything! However, if you want to tinker with this code
+or submit a PR, read below.
 
-### Test
+## Developing
 
-With [ava](https://github.com/avajs/ava), run `yarn test/npm run test` to testing native addon. You can also switch to another testing framework if you want.
+- Install latest `Rust`. Suggest using [rustup](https://rustup.rs/).
+- Install `NodeJS@10+`. LTS versions suggested. Any version supporting `N-API` should work.
+- Install `yarn@1.x`.
 
-### CI
+You can then compile the rust code with:
 
-With github actions, every commits and pull request will be built and tested automatically in [`node@12`, `@node14`] x [`macOS`, `Linux`, `Windows`] matrix. You will never be afraid of the native addon broken in these platforms.
+    yarn build
 
-### Release
+After `yarn build/npm run build` command, you can see
+`napi-gif-encoder.[darwin|win32|linux].node` file in project root.
+This is the native addon built from [lib.rs](./src/lib.rs).
 
-Release native package is very difficult in old days. Native packages may ask developers who use its to install `build toolchains` like `gcc/llvm` , `node-gyp` or something more.
+## Try out using sample project
 
-With `Github actions`, we can easily prebuild `binary` for major platforms. And with `N-API`, we should never afraid of **ABI Compatible**.
+- `yarn`
+- `yarn build`
+- `cd sample`
+- `yarn`
+- `node index.js`
 
-The other problem is how to deliver prebuild `binary` to users. Download it in `postinstall` script is a common way which most packages do it right now. The problem of this solution is it introduced many other packages to download binary which has not been used by `runtime codes`. The other problem is some user may not easily download the binary from `github/CDN` if they are behind private network (But in most case, they have a private NPM mirror).
+You'll then see `output.gif`, which was encoded using the rust encoder.
 
-In this package we choose a better way to solve this problem. We release different `npm packages` for different platform. And add it to `optionalDependencies` before release the `Major` package to npm.
+### Performance
 
-`NPM` will choose which native package should download from `registry` automatically. You can see [npm](./npm) dir for details. And you can also run `yarn add @napi-rs/package-template` to see how it works.
+Using a Ryzen 3950X to encode the sample project:
 
-## Develop requirements
-
-- Install latest `Rust`
-- Install `NodeJS@10+` which fully supported `N-API`
-- Install `yarn@1.x`
-
-## Test in local
-
-- yarn
-- yarn build
-- yarn test
-
-And you will see:
-
-```bash
-$ ava --verbose
-
-  ✔ sync function from native code
-  ✔ sleep function from native code (201ms)
-  ─
-
-  2 tests passed
-✨  Done in 1.12s.
-```
-
-## Release package
-
-Ensure you have set you **NPM_TOKEN** in `Github` project setting.
-
-In `Settings -> Secrets`, add **NPM_TOKEN** into it.
-
-When you want release package:
-
-```
-yarn version [xxx]
-
-git push --follow-tags
-```
-
-Github actions will do the rest job for you.
+| Encoder                                                         | Time  |
+| --------------------------------------------------------------- | ----- |
+| [`gif-encoder-2`](https://github.com/benjaminadk/gif-encoder-2) | 787ms |
+| `napi-gif-encoder`                                              | 217ms |

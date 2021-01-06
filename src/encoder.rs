@@ -1,94 +1,170 @@
+use std::fs::File;
 use std::{
-  convert::{TryFrom, TryInto},
-  num::TryFromIntError,
+    convert::{TryFrom, TryInto},
+    mem::swap,
 };
-use std::{fs::File, io::Write};
 
-use gif::{EncodingError, Repeat};
+use engiffen::{engiffen, Image, Quantizer};
 use napi::*;
-pub struct Encoder<W: Write> {
-  gif_encoder: gif::Encoder<W>,
-  width: u16,
-  height: u16,
-  delay: u16,
+use napi_derive::js_function;
+pub struct Encoder {
+    width: u16,
+    height: u16,
+    framerate: u16,
+    output_path: String,
+    images: Vec<Ref<JsBufferValue>>,
 }
 
-impl<W: Write> Encoder<W> {
-  pub fn new(w: W, width: u16, height: u16) -> std::result::Result<Self, EncodingError> {
-    gif::Encoder::new(w, width, height, &[]).map(|enc| Encoder {
-      gif_encoder: enc,
-      width,
-      height,
-      delay: 4,
-    })
-  }
+impl Encoder {
+    pub fn new(width: u16, height: u16, output_path: &str) -> Self {
+        Encoder {
+            width,
+            height,
+            framerate: 25,
+            output_path: output_path.to_string(),
+            images: Vec::new(),
+        }
+    }
 }
 
 pub fn create_js_class(env: &Env) -> Result<JsFunction> {
-  env.define_class("GIFEncoder", encoder_constructor, &[])
+    env.define_class(
+        "GIFEncoder",
+        encoder_constructor,
+        &[
+            Property::new(&env, "addFrame")?.with_method(add_frame),
+            Property::new(&env, "setFrameRate")?.with_method(set_framerate),
+            Property::new(&env, "finish")?.with_method(finish),
+        ],
+    )
 }
 
-fn map_to_js_range_error(err: TryFromIntError) -> napi::Error {
-  napi::Error {
-    status: Status::GenericFailure,
-    reason: format!("{}", err),
-  }
+#[derive(thiserror::Error, Debug)]
+enum Error {
+    #[error("The provided argument was too large")]
+    ArgumentTooLarge(#[from] std::num::TryFromIntError),
+    #[error("GIF encoder encountered an error")]
+    EncoderError(#[from] engiffen::Error),
 }
 
-fn encoding_err_to_js_err(err: EncodingError) -> napi::Error {
-  napi::Error {
-    status: Status::GenericFailure,
-    reason: format!("{}", err),
-  }
+impl From<Error> for napi::Error {
+    fn from(value: Error) -> Self {
+        Self {
+            status: napi::Status::GenericFailure,
+            reason: value.to_string(),
+        }
+    }
 }
 
 // JS function: constructor(width: number, height: number, file: string)
 #[js_function(3)]
 fn encoder_constructor(ctx: CallContext) -> Result<JsUndefined> {
-  let width32: u32 = ctx.get::<JsNumber>(0)?.try_into()?;
-  let height32: u32 = ctx.get::<JsNumber>(1)?.try_into()?;
-  let width = u16::try_from(width32).map_err(map_to_js_range_error)?;
-  let height = u16::try_from(height32).map_err(map_to_js_range_error)?;
-  let file_path = ctx.get::<JsString>(2)?.into_utf8()?;
-  let image = File::create(file_path.as_str()?)?;
-  let mut encoder = Encoder::new(image, width, height).map_err(encoding_err_to_js_err)?;
-
-  // TODO: allow changing this repeat from JS
-  encoder
-    .gif_encoder
-    .set_repeat(Repeat::Infinite)
-    .map_err(encoding_err_to_js_err)?;
-
-  let mut this = ctx.this_unchecked::<JsObject>();
-  ctx.env.wrap(&mut this, encoder)?;
-  ctx.env.get_undefined()
+    let width32: u32 = ctx.get::<JsNumber>(0)?.try_into()?;
+    let height32: u32 = ctx.get::<JsNumber>(1)?.try_into()?;
+    let width = u16::try_from(width32).map_err(Error::ArgumentTooLarge)?;
+    let height = u16::try_from(height32).map_err(Error::ArgumentTooLarge)?;
+    let file_path = ctx.get::<JsString>(2)?.into_utf8()?;
+    let encoder = Encoder::new(width, height, file_path.as_str()?);
+    let mut this = ctx.this_unchecked::<JsObject>();
+    ctx.env.wrap(&mut this, encoder)?;
+    ctx.env.get_undefined()
 }
 
 // JS function: addFrame(frame: Buffer)
 #[js_function(1)]
 fn add_frame(ctx: CallContext) -> Result<JsUndefined> {
-  let this = ctx.this_unchecked::<JsObject>();
-  // TODO: How do you deal with the type argument? Right now it's always File, but
-  // ideally it wouldn't always be ...
-  let encoder = ctx.env.unwrap::<Encoder<File>>(&this)?;
-  let data = ctx.get::<JsBuffer>(0)?.into_ref()?;
+    let this = ctx.this_unchecked::<JsObject>();
+    let encoder = ctx.env.unwrap::<Encoder>(&this)?;
+    let data = ctx.get::<JsBuffer>(0)?.into_ref()?;
+    encoder.images.push(data);
 
-  let mut frame = gif::Frame::from_rgb(encoder.width, encoder.height, data.as_ref());
-  frame.delay = 1;
-  encoder
-    .gif_encoder
-    .write_frame(&frame)
-    .map_err(encoding_err_to_js_err)?;
-  ctx.env.get_undefined()
+    ctx.env.get_undefined()
 }
 
-// JS function: setDelay(delay: number)
+// JS function: setFrameRate(framerate: number)
 #[js_function(1)]
-fn set_delay(ctx: CallContext) -> Result<JsUndefined> {
-  let this = ctx.this_unchecked::<JsObject>();
-  let encoder = ctx.env.unwrap::<Encoder<File>>(&this)?;
-  let delay32: u32 = ctx.get::<JsNumber>(0)?.try_into()?;
-  let delay = u16::try_from(delay32).map_err(map_to_js_range_error)?;
-  encoder.delay = delay;
-  ctx.env.get_undefined()
+fn set_framerate(ctx: CallContext) -> Result<JsUndefined> {
+    let this = ctx.this_unchecked::<JsObject>();
+    let encoder = ctx.env.unwrap::<Encoder>(&this)?;
+    let fps32: u32 = ctx.get::<JsNumber>(0)?.try_into()?;
+    let fps = u16::try_from(fps32).map_err(Error::ArgumentTooLarge)?;
+    encoder.framerate = fps;
+
+    ctx.env.get_undefined()
+}
+
+struct RenderTask {
+    width: u16,
+    height: u16,
+    framerate: u16,
+    output_path: String,
+    images: Vec<Ref<JsBufferValue>>,
+}
+
+impl RenderTask {
+    fn release_refs(self, env: Env) -> Result<()> {
+        for imgref in self.images {
+            imgref.unref(env)?;
+        }
+        Ok(())
+    }
+}
+
+impl Task for RenderTask {
+    type Output = ();
+    type JsValue = JsUndefined;
+
+    fn compute(&mut self) -> Result<Self::Output> {
+        let mut imgs: Vec<Image> = Vec::new();
+        for data in &self.images {
+            let pixels = data
+                .chunks_exact(4)
+                .map(|pixel| <[u8; 4]>::try_from(pixel).unwrap())
+                .collect();
+            let img = Image {
+                pixels: pixels,
+                width: u32::from(self.width),
+                height: u32::from(self.height),
+            };
+            imgs.push(img);
+        }
+        // let start = std::time::SystemTime::now();
+        let gif = engiffen(&imgs, self.framerate.into(), Quantizer::NeuQuant(10))
+            .map_err(Error::EncoderError)?;
+        let mut file = File::create(&self.output_path)?;
+        gif.write(&mut file).map_err(Error::EncoderError)?;
+        // let end = std::time::SystemTime::now();
+        // println!("{:?}", end.duration_since(start));
+        Ok(())
+    }
+
+    fn resolve(self, env: Env, _output: Self::Output) -> Result<Self::JsValue> {
+        self.release_refs(env)?;
+        env.get_undefined()
+    }
+
+    fn reject(self, env: Env, err: napi::Error) -> Result<Self::JsValue> {
+        self.release_refs(env)?;
+        Err(err)
+    }
+}
+
+// JS function: finish(): Promise<void>
+#[js_function(0)]
+fn finish(ctx: CallContext) -> Result<JsObject> {
+    let this = ctx.this_unchecked::<JsObject>();
+    let encoder = ctx.env.unwrap::<Encoder>(&this)?;
+    let mut images: Vec<Ref<JsBufferValue>> = Vec::new();
+    // let file_str = encoder.output_path.as_str()?;
+    swap(&mut images, &mut encoder.images);
+    let task = RenderTask {
+        width: encoder.width,
+        height: encoder.height,
+        framerate: encoder.framerate,
+        output_path: encoder.output_path.clone(),
+        images,
+    };
+    ctx.env
+        .spawn(task)
+        .map(|async_task| async_task.promise_object())
 }
