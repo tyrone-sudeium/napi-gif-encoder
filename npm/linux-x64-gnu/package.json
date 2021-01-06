@@ -1,6 +1,6 @@
 {
-  "name": "napi-gif-encoder-linux-x64-gnu",
-  "version": "1.0.0",
+  "name": "@tyrone-sudeium/napi-gif-encoder-linux-x64-gnu",
+  "version": "0.0.1",
   "os": ["linux"],
   "cpu": ["x64"],
   "main": "napi-gif-encoder.linux-x64-gnu.node",

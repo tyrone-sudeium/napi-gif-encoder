@@ -1,6 +1,6 @@
 {
-  "name": "napi-gif-encoder-linux-arm-gnueabihf",
-  "version": "1.0.0",
+  "name": "@tyrone-sudeium/napi-gif-encoder-linux-arm-gnueabihf",
+  "version": "0.0.1",
   "os": ["linux"],
   "cpu": ["arm"],
   "main": "napi-gif-encoder.linux-arm-gnueabihf.node",

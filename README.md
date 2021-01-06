@@ -6,10 +6,8 @@
 
 ## Install
 
-Soon:
-
 ```
-yarn add napi-gif-encoder
+yarn add @tyrone-sudeium/napi-gif-encoder
 ```
 
 ## Support matrix

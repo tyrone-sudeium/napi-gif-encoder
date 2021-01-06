@@ -1,6 +1,6 @@
 {
-  "name": "napi-gif-encoder-darwin-arm64",
-  "version": "1.0.0",
+  "name": "@tyrone-sudeium/napi-gif-encoder-darwin-arm64",
+  "version": "0.0.1",
   "os": ["darwin"],
   "cpu": ["arm64"],
   "main": "napi-gif-encoder.darwin-arm64.node",

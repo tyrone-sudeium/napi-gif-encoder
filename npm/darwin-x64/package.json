@@ -1,6 +1,6 @@
 {
-  "name": "napi-gif-encoder-darwin-x64",
-  "version": "1.0.0",
+  "name": "@tyrone-sudeium/napi-gif-encoder-darwin-x64",
+  "version": "0.0.1",
   "os": ["darwin"],
   "cpu": ["x64"],
   "main": "napi-gif-encoder.darwin-x64.node",

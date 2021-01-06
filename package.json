@@ -1,5 +1,5 @@
 {
-  "name": "napi-gif-encoder",
+  "name": "@tyrone-sudeium/napi-gif-encoder",
   "version": "0.0.1",
   "description": "GIF Encoder for Node JS that tries to have reasonable performance",
   "main": "index.js",
