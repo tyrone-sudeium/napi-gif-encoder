@@ -122,7 +122,7 @@ impl Task for RenderTask {
                 .map(|pixel| <[u8; 4]>::try_from(pixel).unwrap())
                 .collect();
             let img = Image {
-                pixels: pixels,
+                pixels,
                 width: u32::from(self.width),
                 height: u32::from(self.height),
             };
