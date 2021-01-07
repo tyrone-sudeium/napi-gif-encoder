@@ -33,6 +33,7 @@ async function main() {
     try {
         const encoder = new GIFEncoder(images[0].width, images[0].height, path.join(__dirname, 'output.gif'))
         encoder.setFrameRate(30)
+        encoder.setSampleFactor(2)
         for (const image of images) {
             encoder.addFrame(image.buffer)
         }

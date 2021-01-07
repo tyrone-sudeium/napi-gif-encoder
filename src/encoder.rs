@@ -11,6 +11,7 @@ pub struct Encoder {
     width: u16,
     height: u16,
     framerate: u16,
+    sample_factor: u32,
     output_path: String,
     images: Vec<Ref<JsBufferValue>>,
 }
@@ -21,6 +22,7 @@ impl Encoder {
             width,
             height,
             framerate: 25,
+            sample_factor: 10,
             output_path: output_path.to_string(),
             images: Vec::new(),
         }
@@ -34,6 +36,7 @@ pub fn create_js_class(env: &Env) -> Result<JsFunction> {
         &[
             Property::new(&env, "addFrame")?.with_method(add_frame),
             Property::new(&env, "setFrameRate")?.with_method(set_framerate),
+            Property::new(&env, "setSampleFactor")?.with_method(set_sample_factor),
             Property::new(&env, "finish")?.with_method(finish),
         ],
     )
@@ -93,10 +96,22 @@ fn set_framerate(ctx: CallContext) -> Result<JsUndefined> {
     ctx.env.get_undefined()
 }
 
+// JS function: setSampleFactor(factor: number)
+#[js_function(1)]
+fn set_sample_factor(ctx: CallContext) -> Result<JsUndefined> {
+    let this = ctx.this_unchecked::<JsObject>();
+    let encoder = ctx.env.unwrap::<Encoder>(&this)?;
+    let factor: u32 = ctx.get::<JsNumber>(0)?.try_into()?;
+    encoder.sample_factor = factor;
+
+    ctx.env.get_undefined()
+}
+
 struct RenderTask {
     width: u16,
     height: u16,
     framerate: u16,
+    sample_factor: u32,
     output_path: String,
     images: Vec<Ref<JsBufferValue>>,
 }
@@ -129,8 +144,12 @@ impl Task for RenderTask {
             imgs.push(img);
         }
         // let start = std::time::SystemTime::now();
-        let gif = engiffen(&imgs, self.framerate.into(), Quantizer::NeuQuant(10))
-            .map_err(Error::EncoderError)?;
+        let gif = engiffen(
+            &imgs,
+            self.framerate.into(),
+            Quantizer::NeuQuant(self.sample_factor),
+        )
+        .map_err(Error::EncoderError)?;
         let mut file = File::create(&self.output_path)?;
         gif.write(&mut file).map_err(Error::EncoderError)?;
         // let end = std::time::SystemTime::now();
@@ -161,6 +180,7 @@ fn finish(ctx: CallContext) -> Result<JsObject> {
         width: encoder.width,
         height: encoder.height,
         framerate: encoder.framerate,
+        sample_factor: encoder.sample_factor,
         output_path: encoder.output_path.clone(),
         images,
     };
