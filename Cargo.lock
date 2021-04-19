@@ -385,9 +385,9 @@ dependencies = [
 
 [[package]]
 name = "napi-build"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f12ae7b330beeeb0b4ebfcd691e29270869717a9145e1ea8e82c9244d6abe27a"
+checksum = "3039ed15066300360660239cab9a6071a0ed899547c49e40952d87ded49b29b8"
 dependencies = [
  "cfg-if 1.0.0",
  "ureq",
