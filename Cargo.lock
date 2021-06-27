@@ -395,9 +395,9 @@ dependencies = [
 
 [[package]]
 name = "napi-derive"
-version = "1.0.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90b290d40fb2237fc658adcd768667fd779dc631066c1e522d838bffbd7d3f99"
+checksum = "8e7ed160148f94ee17936f00288029cb0cfb37c08bbace9f514f735dcd869ed7"
 dependencies = [
  "proc-macro2",
  "quote",
